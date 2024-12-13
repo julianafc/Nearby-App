@@ -8,7 +8,7 @@ export const s = StyleSheet.create({
         width: "100%",
         padding: 8,
         borderWidth: 1,
-        borderColor: colors.gray[100],
+        borderColor: colors.gray[200],
         borderRadius: 12,
         flexDirection: "row",
         gap:16,
