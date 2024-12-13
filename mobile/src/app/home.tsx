@@ -6,6 +6,7 @@ import { api } from "@/services/api";
 import { Categories, CategoriesProps } from "@/components/categories";
 import {Places} from "@/components/places"
 import { PlaceProps } from "@/components/place";
+import { colors } from "@/styles/theme";
 
 type MarketProps = PlaceProps & {}
 
@@ -33,7 +34,6 @@ export default function Home(){
 
             const {data} = await api.get("/markets/category/" + category)
             setMarkets(data)
-            console.log(data)
 
         } catch (error) {
             console.log(error)
@@ -51,7 +51,7 @@ export default function Home(){
     },[category])
 
     return (
-    <View style={{flex: 1,}}>
+    <View style={{flex: 1, backgroundColor: colors.green.light}}>
         <Categories 
             data={categories} 
             onSelect={setCategory}

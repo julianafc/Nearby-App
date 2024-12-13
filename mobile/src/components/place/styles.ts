@@ -4,31 +4,50 @@ import { colors, fontFamily } from "@/styles/theme";
 
 export const s = StyleSheet.create({
     container:{
-        backgroundColor: colors.gray[100],
+        height:120,
+        width: "100%",
+        padding: 8,
+        borderWidth: 1,
+        borderColor: colors.gray[100],
+        borderRadius: 12,
+        flexDirection: "row",
+        gap:16,
+        alignItems: "center"
     },
 
     content:{
-        gap:12,
-        padding: 24,
-        paddingBottom: 100,
+        flex:1,
+        gap:4,
     },
 
-    footer:{},
+    footer:{
+        flexDirection: "row",
+        gap: 7,
+        marginTop: 10,
+    },
 
     description:{
-        width:80,
-        height:4,
-        backgroundColor: colors.gray[300],
+        color:colors.gray[500],
+        fontSize:12,
+        fontFamily: fontFamily.regular,
     },
 
-    image:{},
+    image:{
+        width: 116,
+        height: 104,
+        backgroundColor: colors.gray[200],
+        borderRadius: 8,
+    },
 
     name:{
         color:colors.gray[600],
-        fontSize:16,
-        fontFamily: fontFamily.regular,
-        marginBottom: 16,
-    },
+        fontSize:14,
+        fontFamily: fontFamily.medium,
+        },
 
-    tickets:{},
+    tickets:{
+        color:colors.gray[400],
+        fontSize:12,
+        fontFamily: fontFamily.regular,
+    },
 })
