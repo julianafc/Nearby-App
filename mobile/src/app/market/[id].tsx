@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { View, Text, Alert, Modal, TurboModuleRegistry} from "react-native";
+import { useEffect, useState, useRef } from "react";
+import { View, Alert, Modal, StatusBar, ScrollView} from "react-native";
 import { router, useLocalSearchParams, Redirect } from "expo-router";
 import {useCameraPermissions, CameraView} from "expo-camera"
 
@@ -20,11 +20,15 @@ export default function Market(){
     const [data, setData] = useState<DataProps>()
     const [coupon, setCoupon] = useState<string | null> (null)
     const [isLoading, setIsLoading] = useState(true)
+    const [couponIsFetching, setcouponIsFetching] = useState (false)
     const [isVisibleCameraModal, setIsVisibleCameraModal] = useState (false)
 
     const [_, requestPermission] = useCameraPermissions()
 
     const params = useLocalSearchParams <{id: string}>()
+
+    const qrLock = useRef(false)
+    console.log(params.id)
 
     async function fetchMarket() {
         try {
@@ -49,6 +53,7 @@ export default function Market(){
                     return Alert.alert("Câmera","Você precisa habilitar o uso da câmera")
                 }
 
+                qrLock.current = false
                 setIsVisibleCameraModal(true)
             } catch (error) {
                 console.log(error)
@@ -56,9 +61,39 @@ export default function Market(){
             }
         }
 
+    async function getCoupon(id:string) {
+            try {
+                setcouponIsFetching(true)
+
+                const {data} = await api.patch("/coupons/" + id)
+
+                Alert.alert("Cupom", data.coupon)
+                setCoupon(data.coupon)
+            } catch (error) {
+                console.log(error)
+                Alert.alert("Erro","Não foi possível utilizar o cupom")
+            } finally{
+                setcouponIsFetching(false)
+            }
+        }
+
+    function handleUseCoupon(id: string){
+        setIsVisibleCameraModal(false)
+
+        Alert.alert(
+            "Cupom",
+             "Não é possível reutilizar um cupom resgatado. Deseja realmente regatar o cupom?",
+             [
+                {style:"cancel", text: "Não"},
+
+                {text: "Sim", onPress: () => getCoupon(id)},
+             ]
+            )
+    }
+
         useEffect(() => {
             fetchMarket()
-        }, [params.id])
+        }, [params.id, coupon])
 
         if(isLoading){
             return <Loading />
@@ -70,9 +105,12 @@ export default function Market(){
 
     return(
         <View style={{flex:1,}}>
+            <StatusBar barStyle="light-content" hidden={isVisibleCameraModal}/>
+            <ScrollView showsVerticalScrollIndicator={false}> // vai ser usada por dispositivos pequenos
             <Cover uri={data?.cover} />
             <Details data={data} />
-            {coupon && <Coupon code={coupon} />} // faz com que o cupom só apareça se tiver um disponível // 
+            {coupon && <Coupon code={coupon} />} // faz com que o cupom só apareça se tiver um disponível //
+            </ScrollView> 
 
             <View style={{padding: 32,}}>
                 <Button onPress={handleOpenCamera}>
@@ -81,10 +119,22 @@ export default function Market(){
             </View>
 
             <Modal style={{flex:1,}} visible={isVisibleCameraModal}>
-                <CameraView style={{flex:1}} />
+                <CameraView 
+                style={{flex:1}}
+                facing="back"
+                onBarcodeScanned={({data}) => {
+                    if(data && !qrLock.current){ // lê o qrcode apenas uma vez
+                        qrLock.current = true
+                        setTimeout(() => handleUseCoupon(data), 500)
+                    }
+                }} 
+                />
 
                 <View style={{position:"absolute", bottom: 32, left: 32, right: 32}}>
-                <Button onPress={() => setIsVisibleCameraModal(false)}>
+                <Button 
+                onPress={() => setIsVisibleCameraModal(false)}
+                isLoading={couponIsFetching}
+                >
                     <Button.Title>Voltar</Button.Title>
                 </Button>
                 </View>
